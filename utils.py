@@ -10,6 +10,8 @@ import random
 from sklearn.metrics import confusion_matrix
 from torch.utils.data import DataLoader
 import copy
+import datetime
+from torchvision.datasets import ImageFolder
 
 from model import *
 from datasets import MNIST_truncated, CIFAR10_truncated, CIFAR100_truncated, ImageFolder_custom, SVHN_custom, FashionMNIST_truncated, CustomTensorDataset, CelebA_custom, FEMNIST, Generated, genData
@@ -172,8 +174,8 @@ def load_mycifar10_data(datadir):
 ])
 
 
-    cifar10_train_ds = ImageFolder(datadir+'./train/', transform=transforms)
-    cifar10_test_ds = ImageFolder(datadir+'./test/', transform=transforms)
+    cifar10_train_ds = ImageFolder(datadir+'/train/', transform=transforms)
+    cifar10_test_ds = ImageFolder(datadir+'/test/', transform=transforms)
 
     X_train, y_train = np.array([s[0] for s in cifar10_train_ds.samples]), np.array([int(s[1]) for s in cifar10_train_ds.samples])
     X_test, y_test = np.array([s[0] for s in cifar10_test_ds.samples]), np.array([int(s[1]) for s in cifar10_test_ds.samples])
@@ -686,7 +688,7 @@ class AddGaussianNoise(object):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
 def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_level=0, net_id=None, total=0):
-    if dataset in ('mnist', 'femnist', 'fmnist', 'cifar10', 'svhn', 'generated', 'covtype', 'a9a', 'rcv1', 'SUSY', 'cifar100', 'tinyimagenet'):
+    if dataset in ('mnist', 'femnist', 'fmnist', 'cifar10', 'svhn', 'generated', 'covtype', 'a9a', 'rcv1', 'SUSY', 'cifar100', 'mycifar10', 'tinyimagenet'):
         if dataset == 'mnist':
             dl_obj = MNIST_truncated
 
@@ -784,6 +786,20 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
+        elif dataset == 'mycifar10':
+            dl_obj = ImageFolder
+
+            resize_transform = transforms.Resize((32, 32))
+
+            transforme = transforms.Compose([
+              transforms.ToTensor(),
+              transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+          ])
+
+            transform_train= transforms.Compose([resize_transform, transforme])
+
+            transform_test= transforms.Compose([resize_transform, transforme])
+
         else:
             dl_obj = Generated
             transform_train = None
@@ -793,6 +809,12 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
         if dataset == "tinyimagenet":
             train_ds = dl_obj(datadir+'./train/', dataidxs=dataidxs, transform=transform_train)
             test_ds = dl_obj(datadir+'./val/', transform=transform_test)
+
+        elif dataset == "mycifar10":
+            train_ds = dl_obj(datadir+'/train/', transform=transform_train)
+            test_ds = dl_obj(datadir+'/test/', transform=transform_test)
+
+
         else:
             train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transform=transform_train, download=True)
             test_ds = dl_obj(datadir, train=False, transform=transform_test, download=True)
