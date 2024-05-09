@@ -66,6 +66,8 @@ def init_nets(net_configs, dropout_p, n_parties, args):
         n_classes = 10
     elif args.dataset == 'celeba':
         n_classes = 2
+    elif args.dataset == 'mycifar10':
+        n_classes = 2
     elif args.dataset == 'cifar100':
         n_classes = 100
     elif args.dataset == 'tinyimagenet':
@@ -118,6 +120,8 @@ def init_nets(net_configs, dropout_p, n_parties, args):
                 elif args.model == "simple-cnn":
                     if args.dataset in ("cifar10", "cinic10", "svhn"):
                         net = SimpleCNN(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], output_dim=10)
+                    elif args.dataset in ("mycifar10"):
+                        net = SimpleCNN()                    
                     elif args.dataset in ("mnist", 'femnist', 'fmnist'):
                         net = SimpleCNNMNIST(input_dim=(16 * 4 * 4), hidden_dims=[120, 84], output_dim=10)
                     elif args.dataset == 'celeba':
