@@ -87,7 +87,7 @@ def load_svhn_data(datadir):
     # y_test = y_test.data.numpy()
 
     return (X_train, y_train, X_test, y_test)
-
+    
 
 def load_cifar10_data(datadir):
 
@@ -163,6 +163,23 @@ def load_tinyimagenet_data(datadir):
 
     return (X_train, y_train, X_test, y_test)
 
+
+def load_mycifar10_data(datadir):
+
+    transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+])
+
+
+    cifar10_train_ds = ImageFolder(datadir+'./train/', transform=transforms)
+    cifar10_test_ds = ImageFolder(datadir+'./test/', transform=transforms)
+
+    X_train, y_train = np.array([s[0] for s in cifar10_train_ds.samples]), np.array([int(s[1]) for s in cifar10_train_ds.samples])
+    X_test, y_test = np.array([s[0] for s in cifar10_test_ds.samples]), np.array([int(s[1]) for s in cifar10_test_ds.samples])
+
+    return (X_train, y_train, X_test, y_test)
+
 def record_net_data_stats(y_train, net_dataidx_map, logdir):
 
     net_cls_counts = {}
@@ -196,6 +213,8 @@ def partition_data(dataset, datadir, logdir, partition, n_parties, beta=0.4):
         X_train, y_train, X_test, y_test = load_cifar100_data(datadir)
     elif dataset == 'tinyimagenet':
         X_train, y_train, X_test, y_test = load_tinyimagenet_data(datadir)
+    elif dataset == 'mycifar10':
+        X_train, y_train, X_test, y_test = load_mycifar10_data(datadir)
     elif dataset == 'generated':
         X_train, y_train = [], []
         for loc in range(4):
@@ -354,6 +373,8 @@ def partition_data(dataset, datadir, logdir, partition, n_parties, beta=0.4):
             K = 100
         elif dataset == "tinyimagenet":
             K = 200
+        elif dataset == "mycifar10":
+            K = 2
         if num == 10:
             net_dataidx_map ={i:np.ndarray(0,dtype=np.int64) for i in range(n_parties)}
             for i in range(10):
